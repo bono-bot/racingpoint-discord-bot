@@ -7,6 +7,7 @@ const config = require('../config');
 const channels = {
   askRacingPoint: null,
   welcome: null,
+  leaderboard: null,
 };
 
 module.exports = {
@@ -61,10 +62,32 @@ module.exports = {
     }
     channels.welcome = welcomeChannel?.id || null;
 
+    // Find or create #leaderboard
+    let leaderboardChannel = guild.channels.cache.find(
+      ch => ch.name === 'leaderboard' && ch.type === ChannelType.GuildText
+    );
+    if (!leaderboardChannel) {
+      try {
+        leaderboardChannel = await guild.channels.create({
+          name: 'leaderboard',
+          type: ChannelType.GuildText,
+          topic: 'Weekly leaderboard summaries, track records, and time trial challenges.',
+        });
+        logger.info({ channelId: leaderboardChannel.id }, '#leaderboard channel created');
+      } catch (err) {
+        logger.error({ err }, 'Failed to create #leaderboard channel');
+      }
+    }
+    channels.leaderboard = leaderboardChannel?.id || null;
+
     logger.info({
       askRacingPoint: channels.askRacingPoint,
       welcome: channels.welcome,
+      leaderboard: channels.leaderboard,
     }, 'Channel IDs resolved');
+
+    const { startScheduler } = require('../services/scheduler');
+    startScheduler(client, channels);
   },
 };
 
