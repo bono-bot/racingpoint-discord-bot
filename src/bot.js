@@ -28,4 +28,7 @@ for (const file of eventFiles) {
   logger.debug({ event: event.name }, 'Event handler loaded');
 }
 
+client.on('error', (err) => logger.error({ err }, 'Discord client error'));
+client.on('warn', (msg) => logger.warn({ msg }, 'Discord client warning'));
+
 module.exports = client;
